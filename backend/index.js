@@ -21,40 +21,45 @@ const client = new MongoClient(uri, {
   }
 });
 
-async function run() {
-  try {
-
-    await client.connect();
+client.connect()
+  .then(() => {
     const database = client.db("yoga-master"); // Replace with your database name
-    const userCollection = database.collection("users");
     const classesCollection = database.collection("classes"); // Replace with your collection name
-    const cartCollection = database.collection("cart");
-    const paymentCollection = database.collection("payments");
-    const enrolledCollection = database.collection("enrolled");
-    const appliedCollection = database.collection("applied");
-    app.post('/new-class', async (req, res) => {
+
+    app.post('/new-class', (req, res) => {
       const newClass = req.body;
-      // Uncomment if you need to convert availableSeats to an integer
-      // newClass.availableSeats = parseInt(newClass.availableSeats);
-
-      const result = await classesCollection.insertOne(newClass);
-      res.send(result);
+      classesCollection.insertOne(newClass)
+        .then(result => {
+          res.status(201).send(result);
+        })
+        .catch(error => {
+          console.error("Insert error:", error);
+          res.status(500).send("Error inserting new class.");
+        });
     });
-    await client.db("admin").command({ ping: 1 });
-    console.log("Successfully connected to MongoDB!");
-  } catch (error) {
-    console.error("Connection error:", error);
-  } finally {
-    await client.close();
-  }
-}
 
-run();
+    app.get('/classes', (req, res) => {
+      const query = { status: "approved" };
+      classesCollection.find(query).toArray()
+        .then(result => {
+          res.send(result);
+        })
+        .catch(error => {
+          console.error("Error fetching classes:", error);
+          res.status(500).send("Error fetching classes.");
+        });
+    });
+
+    console.log("Successfully connected to MongoDB!");
+  })
+  .catch(error => {
+    console.error("Connection error:", error);
+  });
 
 app.get('/', (req, res) => {
-  res.send('MONGo');
+  res.send('MongoDB Connected!');
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Server listening on port ${port}`);
 });
