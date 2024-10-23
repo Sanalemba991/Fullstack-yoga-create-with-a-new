@@ -2,7 +2,7 @@ require('dotenv').config(); // Ensure this is at the top
 
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 5000;
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
@@ -18,7 +18,16 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+
     await client.connect();
+    const database = client.db("yoga-master"); // Replace with your database name
+    const userCollection = database.collection("users");
+    const classesCollection = database.collection("classes"); // Replace with your collection name
+    const cartCollection = database.collection("cart");
+    const paymentCollection = database.collection("payments");
+    const enrolledCollection = database.collection("enrolled");
+    const appliedCollection = database.collection("applied");
+
     await client.db("admin").command({ ping: 1 });
     console.log("Successfully connected to MongoDB!");
   } catch (error) {
@@ -31,7 +40,7 @@ async function run() {
 run();
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('MONGo');
 });
 
 app.listen(port, () => {
