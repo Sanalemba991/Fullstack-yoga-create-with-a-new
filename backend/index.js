@@ -3,6 +3,11 @@ require('dotenv').config(); // Ensure this is at the top
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
+const cors = require('cors');
+
+// Middleware
+app.use(cors());
+app.use(express.json());
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
@@ -27,7 +32,14 @@ async function run() {
     const paymentCollection = database.collection("payments");
     const enrolledCollection = database.collection("enrolled");
     const appliedCollection = database.collection("applied");
+    app.post('/new-class', async (req, res) => {
+      const newClass = req.body;
+      // Uncomment if you need to convert availableSeats to an integer
+      // newClass.availableSeats = parseInt(newClass.availableSeats);
 
+      const result = await classesCollection.insertOne(newClass);
+      res.send(result);
+    });
     await client.db("admin").command({ ping: 1 });
     console.log("Successfully connected to MongoDB!");
   } catch (error) {
